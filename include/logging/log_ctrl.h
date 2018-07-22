@@ -43,6 +43,17 @@ void log_core_init(void);
 void log_init(void);
 
 /**
+ * @brief Function for providing thread which is processing logs.
+ *
+ * See CONFIG_LOG_PROCESS_TRIGGER_THRESHOLD.
+ *
+ * @note Function has asserts and has no effect when CONFIG_LOG_PROCESS is set.
+ *
+ * @param process_tid Process thread id. Used to wake up the thread.
+ */
+void log_thread_set(k_tid_t process_tid);
+
+/**
  * @brief Function for providing timestamp function.
  *
  * @param timestamp_getter	Timestamp function.
@@ -71,6 +82,13 @@ void log_panic(void);
  * @retval false No messages pending.
  */
 bool log_process(bool bypass);
+
+/**
+ * @brief Return number of buffered log messages.
+ *
+ * @return Number of currently buffered log messages.
+ */
+u32_t log_buffered_cnt(void);
 
 /** @brief Get number of independent logger sources (modules and instances)
  *

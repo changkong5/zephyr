@@ -13,6 +13,7 @@
 #include <assert.h>
 #include <atomic.h>
 #include <stdio.h>
+#include <atomic.h>
 
 #ifndef CONFIG_LOG_PRINTK_MAX_STRING_LENGTH
 #define CONFIG_LOG_PRINTK_MAX_STRING_LENGTH 1
@@ -26,6 +27,8 @@ LOG_BACKEND_UART_DEFINE(log_backend_uart);
 static struct log_list_t list;
 static atomic_t initialized;
 static bool panic_mode;
+static atomic_t buffered_cnt;
+static k_tid_t proc_tid;
 
 static u32_t dummy_timestamp(void);
 static timestamp_get_t timestamp_func = dummy_timestamp;
@@ -38,9 +41,22 @@ static u32_t dummy_timestamp(void)
 static inline void msg_finalize(struct log_msg *msg,
 				struct log_msg_ids src_level)
 {
+	unsigned int key;
+
 	msg->hdr.ids = src_level;
 	msg->hdr.timestamp = timestamp_func();
-	unsigned int key = irq_lock();
+
+	atomic_inc(&buffered_cnt);
+
+	if (!IS_ENABLED(CONFIG_LOG_INPLACE_PROCESS) &&
+	    CONFIG_LOG_PROCESS_TRIGGER_THRESHOLD) {
+		if (buffered_cnt == CONFIG_LOG_PROCESS_TRIGGER_THRESHOLD &&
+		    proc_tid) {
+			k_wakeup(proc_tid);
+		}
+	}
+
+	key = irq_lock();
 
 	log_list_add_tail(&list, msg);
 
@@ -223,6 +239,27 @@ void log_init(void)
 #endif
 }
 
+static void thread_set(k_tid_t process_tid)
+{
+	proc_tid = process_tid;
+
+	if (!IS_ENABLED(CONFIG_LOG_INPLACE_PROCESS) &&
+	    CONFIG_LOG_PROCESS_TRIGGER_THRESHOLD &&
+	    process_tid &&
+	    buffered_cnt >= CONFIG_LOG_PROCESS_TRIGGER_THRESHOLD) {
+		k_wakeup(proc_tid);
+	}
+}
+
+void log_thread_set(k_tid_t process_tid)
+{
+	if (IS_ENABLED(CONFIG_LOG_PROCESS_THREAD)) {
+		assert(0);
+	} else {
+		thread_set(process_tid);
+	}
+}
+
 int log_set_timestamp_func(timestamp_get_t timestamp_getter, u32_t freq)
 {
 	if (!timestamp_getter) {
@@ -297,10 +334,16 @@ bool log_process(bool bypass)
 	irq_unlock(key);
 
 	if (msg != NULL) {
+		atomic_dec(&buffered_cnt);
 		msg_process(msg, bypass);
 	}
 
 	return (log_list_head_peek(&list) != NULL);
+}
+
+u32_t log_buffered_cnt(void)
+{
+	return buffered_cnt;
 }
 
 u32_t log_src_cnt_get(u32_t domain_id)
@@ -413,3 +456,21 @@ u32_t log_filter_get(struct log_backend const *const backend,
 		return log_compiled_level_get(src_id);
 	}
 }
+
+#ifdef CONFIG_LOG_PROCESS_THREAD
+static void log_process_thread_func(void *dummy1, void *dummy2, void *dummy3)
+{
+	log_init();
+	thread_set(k_current_get());
+
+	while (1) {
+		if (log_process(false) == false) {
+			k_sleep(CONFIG_LOG_PROCESS_THREAD_SLEEP_MS);
+		}
+	}
+}
+
+K_THREAD_DEFINE(log_process_thread, CONFIG_LOG_PROCESS_THREAD_STACK_SIZE,
+		log_process_thread_func, NULL, NULL, NULL,
+		CONFIG_LOG_PROCESS_THREAD_PRIO, 0, K_NO_WAIT);
+#endif /* CONFIG_LOG_PROCESS_THREAD */
