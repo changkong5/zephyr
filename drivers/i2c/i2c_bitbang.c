@@ -119,6 +119,12 @@ static void i2c_repeated_start(struct i2c_bitbang *context)
 
 static void i2c_stop(struct i2c_bitbang *context)
 {
+	/* The low level part for a complete 9th clock */
+	i2c_set_scl(context, 0);
+	i2c_delay(context->delays[T_LOW]);
+	i2c_set_scl(context, 1);
+	i2c_delay(context->delays[T_HIGH]);
+
 	if (i2c_get_sda(context)) {
 		/*
 		 * SDA is already high, so we need to make it low so that
