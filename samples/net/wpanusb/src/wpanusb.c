@@ -13,7 +13,7 @@
 #include <net_private.h>
 
 #include <device.h>
-#include <shell/shell.h>
+#include <shell/legacy_shell.h>
 
 #include <usb/usb_device.h>
 #include <usb/usb_common.h>
@@ -507,7 +507,7 @@ void main(void)
 
 	SYS_LOG_INF("Start");
 
-	ieee802154_dev = device_get_binding(CONFIG_NET_APP_IEEE802154_DEV_NAME);
+	ieee802154_dev = device_get_binding(CONFIG_NET_CONFIG_IEEE802154_DEV_NAME);
 	if (!ieee802154_dev) {
 		SYS_LOG_ERR("Cannot get IEEE802.15.4 device");
 		return;
