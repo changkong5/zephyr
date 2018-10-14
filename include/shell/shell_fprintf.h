@@ -34,7 +34,6 @@ struct shell_fprintf {
 	struct shell_fprintf_control_block *ctrl_blk;
 };
 
-
 /**
  * @brief Macro for defining shell_fprintf instance.
  *
@@ -61,7 +60,7 @@ struct shell_fprintf {
 	}
 
 /**
- * @brief fprintf like function which send formated data stream to output.
+ * @brief fprintf like function which send formatted data stream to output.
  *
  * @param sh_fprintf	fprintf instance.
  * @param fmt		Format string.

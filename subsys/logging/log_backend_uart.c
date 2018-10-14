@@ -12,7 +12,7 @@
 #include <uart.h>
 #include <assert.h>
 
-int char_out(u8_t *data, size_t length, void *ctx)
+static int char_out(u8_t *data, size_t length, void *ctx)
 {
 	struct device *dev = (struct device *)ctx;
 
@@ -32,7 +32,7 @@ static void put(const struct log_backend *const backend,
 {
 	log_msg_get(msg);
 
-	u32_t flags = 0;
+	u32_t flags = LOG_OUTPUT_FLAG_LEVEL | LOG_OUTPUT_FLAG_TIMESTAMP;
 
 	if (IS_ENABLED(CONFIG_LOG_BACKEND_SHOW_COLOR)) {
 		flags |= LOG_OUTPUT_FLAG_COLORS;
@@ -48,7 +48,7 @@ static void put(const struct log_backend *const backend,
 
 }
 
-void log_backend_uart_init(void)
+static void log_backend_uart_init(void)
 {
 	struct device *dev;
 
@@ -68,4 +68,4 @@ const struct log_backend_api log_backend_uart_api = {
 	.init = log_backend_uart_init,
 };
 
-LOG_BACKEND_DEFINE(log_backend_uart, log_backend_uart_api);
+LOG_BACKEND_DEFINE(log_backend_uart, log_backend_uart_api, true);

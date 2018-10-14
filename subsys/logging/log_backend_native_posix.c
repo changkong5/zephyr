@@ -45,7 +45,7 @@ static void preprint_char(int c)
 
 static u8_t buf[_STDOUT_BUF_SIZE];
 
-int char_out(u8_t *data, size_t length, void *ctx)
+static int char_out(u8_t *data, size_t length, void *ctx)
 {
 	for (size_t i = 0; i < length; i++) {
 		preprint_char(data[i]);
@@ -61,7 +61,7 @@ static void put(const struct log_backend *const backend,
 {
 	log_msg_get(msg);
 
-	u32_t flags = 0;
+	u32_t flags = LOG_OUTPUT_FLAG_LEVEL | LOG_OUTPUT_FLAG_TIMESTAMP;
 
 	if (IS_ENABLED(CONFIG_LOG_BACKEND_SHOW_COLOR)) {
 		if (posix_trace_over_tty(0)) {
@@ -89,4 +89,6 @@ const struct log_backend_api log_backend_native_posix_api = {
 	.panic = panic,
 };
 
-LOG_BACKEND_DEFINE(log_backend_native_posix, log_backend_native_posix_api);
+LOG_BACKEND_DEFINE(log_backend_native_posix,
+		   log_backend_native_posix_api,
+		   true);
