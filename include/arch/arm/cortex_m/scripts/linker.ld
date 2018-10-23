@@ -371,8 +371,6 @@ SECTIONS
         KERNEL_INPUT_SECTION(".noinit.*")
 	*(".kernel_noinit.*")
 
-#include <linker/priv_stacks-noinit.ld>
-
 #ifdef CONFIG_SOC_NOINIT_LD
 #include <soc-noinit.ld>
 #endif
@@ -402,6 +400,8 @@ SECTIONS
 #include <linker/common-ram.ld>
 #include <linker/priv_stacks.ld>
 #include <linker/kobject.ld>
+
+#include <linker/priv_stacks-noinit.ld>
 
     __data_ram_end = .;
 
