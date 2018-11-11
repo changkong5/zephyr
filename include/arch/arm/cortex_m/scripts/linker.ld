@@ -141,9 +141,6 @@ SECTIONS
 	KEEP(*(.kinetis_flash_config))
 	KEEP(*(".kinetis_flash_config.*"))
 
-#ifdef CONFIG_GEN_SW_ISR_TABLE
-	KEEP(*(SW_ISR_TABLE))
-#endif
 	_vector_end = .;
 	_image_text_start = .;
 	*(.text)
@@ -162,6 +159,16 @@ SECTIONS
 	} GROUP_LINK_IN(ROMABLE_REGION)
 
 	_image_text_end = .;
+
+#if defined (CONFIG_CPLUSPLUS)
+	SECTION_PROLOGUE(.ARM.extab,,)
+	{
+	/*
+	 * .ARM.extab section containing exception unwinding information.
+	 */
+	*(.ARM.extab* .gnu.linkonce.armextab.*)
+	} GROUP_LINK_IN(ROMABLE_REGION)
+#endif
 
 	SECTION_PROLOGUE(.ARM.exidx,,)
 	{
@@ -289,8 +296,10 @@ SECTIONS
 		_image_ram_start = .;
 		_app_smem_start = .;
 		APP_SMEM_SECTION()
+		/* 32-byte align end of app shared area to make MPU friendly */
+		. = ALIGN(_app_data_align);
 		_app_smem_end = .;
-		. = ALIGN(4);
+
 	} GROUP_DATA_LINK_IN(RAMABLE_REGION, ROMABLE_REGION)
 #endif  /* CONFIG_MPU_REQUIRES_POWER_OF_TWO_ALIGNMENT */
 

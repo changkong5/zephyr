@@ -193,9 +193,9 @@
 			label = "UART_7";
 		};
 
-		uart8: serial@40007C00 {
+		uart8: serial@40007c00 {
 			compatible = "st,stm32-uart";
-			reg = <0x40007C00 0x400>;
+			reg = <0x40007c00 0x400>;
 			clocks = <&rcc STM32_CLOCK_BUS_APB1 0x80000000>;
 			interrupts = <83 0>;
 			status = "disabled";
@@ -228,17 +228,83 @@
 			label = "I2C_2";
 		};
 
-		i2c3: i2c@40005C00 {
+		i2c3: i2c@40005c00 {
 			compatible = "st,stm32-i2c-v2";
 			clock-frequency = <I2C_BITRATE_STANDARD>;
 			#address-cells = <1>;
 			#size-cells = <0>;
-			reg = <0x40005C00 0x400>;
+			reg = <0x40005c00 0x400>;
 			clocks = <&rcc STM32_CLOCK_BUS_APB1 0x00800000>;
 			interrupts = <72 0>, <73 0>;
 			interrupt-names = "event", "error";
 			status = "disabled";
 			label = "I2C_3";
+		};
+
+		spi1: spi@40013000 {
+			compatible = "st,stm32-spi";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <0x40013000 0x400>;
+			clocks = <&rcc STM32_CLOCK_BUS_APB2 0x00001000>;
+			interrupts = <35 5>;
+			status = "disabled";
+			label = "SPI_1";
+		};
+
+		spi2: spi@40003800 {
+			compatible = "st,stm32-spi";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <0x40003800 0x400>;
+			clocks = <&rcc STM32_CLOCK_BUS_APB1 0x00004000>;
+			interrupts = <36 5>;
+			status = "disabled";
+			label = "SPI_2";
+		};
+
+		spi3: spi@40003c00 {
+			compatible = "st,stm32-spi";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <0x40003c00 0x400>;
+			clocks = <&rcc STM32_CLOCK_BUS_APB1 0x00008000>;
+			interrupts = <51 5>;
+			status = "disabled";
+			label = "SPI_3";
+		};
+
+		spi4: spi@40013400 {
+			compatible = "st,stm32-spi";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <0x40013400 0x400>;
+			clocks = <&rcc STM32_CLOCK_BUS_APB2 0x00002000>;
+			interrupts = <84 5>;
+			status = "disabled";
+			label = "SPI_4";
+		};
+
+		spi5: spi@40015000 {
+			compatible = "st,stm32-spi";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <0x40015000 0x400>;
+			clocks = <&rcc STM32_CLOCK_BUS_APB2 0x00100000>;
+			interrupts = <85 5>;
+			status = "disabled";
+			label = "SPI_5";
+		};
+
+		spi6: spi@40015400 {
+			compatible = "st,stm32-spi";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <0x40015400 0x400>;
+			clocks = <&rcc STM32_CLOCK_BUS_APB2 0x00200000>;
+			interrupts = <86 5>;
+			status = "disabled";
+			label = "SPI_6";
 		};
 
 		timers1: timers@40010000 {
@@ -253,6 +319,7 @@
 				status = "disabled";
 				st,prescaler = <10000>;
 				label = "PWM_1";
+				#pwm-cells = <2>;
 			};
 		};
 
@@ -268,6 +335,7 @@
 				status = "disabled";
 				st,prescaler = <0>;
 				label = "PWM_2";
+				#pwm-cells = <2>;
 			};
 		};
 
@@ -283,6 +351,7 @@
 				status = "disabled";
 				st,prescaler = <10000>;
 				label = "PWM_3";
+				#pwm-cells = <2>;
 			};
 		};
 
@@ -298,6 +367,7 @@
 				status = "disabled";
 				st,prescaler = <10000>;
 				label = "PWM_4";
+				#pwm-cells = <2>;
 			};
 		};
 
@@ -313,6 +383,7 @@
 				status = "disabled";
 				st,prescaler = <0>;
 				label = "PWM_5";
+				#pwm-cells = <2>;
 			};
 		};
 
@@ -328,6 +399,7 @@
 				status = "disabled";
 				st,prescaler = <10000>;
 				label = "PWM_6";
+				#pwm-cells = <2>;
 			};
 		};
 
@@ -343,6 +415,7 @@
 				status = "disabled";
 				st,prescaler = <10000>;
 				label = "PWM_7";
+				#pwm-cells = <2>;
 			};
 		};
 
@@ -358,6 +431,7 @@
 				status = "disabled";
 				st,prescaler = <10000>;
 				label = "PWM_8";
+				#pwm-cells = <2>;
 			};
 		};
 
@@ -373,6 +447,7 @@
 				status = "disabled";
 				st,prescaler = <10000>;
 				label = "PWM_9";
+				#pwm-cells = <2>;
 			};
 		};
 
@@ -388,6 +463,7 @@
 				status = "disabled";
 				st,prescaler = <10000>;
 				label = "PWM_10";
+				#pwm-cells = <2>;
 			};
 		};
 
@@ -403,6 +479,7 @@
 				status = "disabled";
 				st,prescaler = <10000>;
 				label = "PWM_11";
+				#pwm-cells = <2>;
 			};
 		};
 
@@ -418,6 +495,7 @@
 				status = "disabled";
 				st,prescaler = <10000>;
 				label = "PWM_12";
+				#pwm-cells = <2>;
 			};
 		};
 
@@ -433,6 +511,7 @@
 				status = "disabled";
 				st,prescaler = <10000>;
 				label = "PWM_13";
+				#pwm-cells = <2>;
 			};
 		};
 
@@ -448,6 +527,7 @@
 				status = "disabled";
 				st,prescaler = <10000>;
 				label = "PWM_14";
+				#pwm-cells = <2>;
 			};
 		};
 
@@ -473,6 +553,15 @@
 			maximum-speed = "full-speed";
 			status = "disabled";
 			label= "OTGHS";
+		};
+
+		rtc: rtc@40002800 {
+			compatible = "st,stm32-rtc";
+			reg = <0x40002800 0x300>;
+			interrupts = <41 0>;
+			prescaler = <32768>;
+			status = "disabled";
+			label = "RTC_0";
 		};
 	};
 };

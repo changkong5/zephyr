@@ -17,10 +17,10 @@
 #include <ztest.h>
 #include <logging/log_backend.h>
 #include <logging/log_ctrl.h>
+#include <logging/log.h>
+#include "test_module.h"
 
 #define LOG_MODULE_NAME test
-#include "logging/log.h"
-
 LOG_MODULE_REGISTER(LOG_MODULE_NAME);
 
 typedef void (*custom_put_callback_t)(struct log_backend const *const backend,
@@ -44,6 +44,7 @@ static void put(struct log_backend const *const backend,
 		struct log_msg *msg)
 {
 	log_msg_get(msg);
+	u32_t nargs = log_msg_nargs_get(msg);
 	struct backend_cb *cb = (struct backend_cb *)backend->cb->ctx;
 
 	if (cb->check_id) {
@@ -62,19 +63,18 @@ static void put(struct log_backend const *const backend,
 	}
 
 	/* Arguments in the test are fixed, 1,2,3,4,5,... */
-	if (cb->check_args &&
-	    log_msg_is_std(msg) &&
-	    log_msg_nargs_get(msg) > 0) {
-		for (int i = 0; i < log_msg_nargs_get(msg); i++) {
-			zassert_equal(i+1,
-				      log_msg_arg_get(msg, i),
+	if (cb->check_args && log_msg_is_std(msg) && nargs > 0) {
+		for (int i = 0; i < nargs; i++) {
+			u32_t arg = log_msg_arg_get(msg, i);
+
+			zassert_equal(i+1, arg,
 				      "Unexpected argument in the message");
 		}
 	}
 
 	if (cb->check_strdup) {
 		zassert_false(cb->exp_strdup[cb->counter]
-				^ log_is_strdup((void *)log_msg_arg_get(msg, 0)),
+			      ^ log_is_strdup((void *)log_msg_arg_get(msg, 0)),
 			      NULL);
 	}
 
@@ -152,6 +152,8 @@ static void log_setup(bool backend2_enable)
 		memset(&backend2_cb, 0, sizeof(backend2_cb));
 
 		log_backend_enable(&backend2, &backend2_cb, LOG_LEVEL_DBG);
+	} else {
+		log_backend_disable(&backend2);
 	}
 
 	test_source_id = log_source_id_get(STRINGIFY(LOG_MODULE_NAME));
@@ -259,13 +261,14 @@ static void test_log_arguments(void)
 	log_setup(false);
 	backend1_cb.check_args = true;
 
-	backend1_cb.exp_nargs[0] = 0;
+	backend1_cb.exp_nargs[0] = 10;
 	backend1_cb.exp_nargs[1] = 1;
 	backend1_cb.exp_nargs[2] = 2;
 	backend1_cb.exp_nargs[3] = 3;
 	backend1_cb.exp_nargs[4] = 4;
 	backend1_cb.exp_nargs[5] = 5;
 	backend1_cb.exp_nargs[6] = 6;
+	backend1_cb.exp_nargs[7] = 10;
 
 	LOG_INF("test");
 	LOG_INF("test %d", 1);
@@ -274,11 +277,13 @@ static void test_log_arguments(void)
 	LOG_INF("test %d %d %d %d", 1, 2, 3, 4);
 	LOG_INF("test %d %d %d %d %d", 1, 2, 3, 4, 5);
 	LOG_INF("test %d %d %d %d %d %d", 1, 2, 3, 4, 5, 6);
+	LOG_INF("test %d %d %d %d %d %d %d %d %d %d",
+			1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
 
 	while (log_process(false)) {
 	}
 
-	zassert_equal(7,
+	zassert_equal(8,
 		      backend1_cb.counter,
 		      "Unexpected amount of messages received by the backend.");
 }
@@ -311,11 +316,10 @@ static void test_log_panic(void)
 		      "Unexpected amount of messages received by the backend.");
 }
 
-/* extern function comes from the file which is part of test module. It is
+/* Function comes from the file which is part of test module. It is
  * expected that logs coming from it will have same source_id as current
  * module (this file).
  */
-extern void test_func(void);
 static void test_log_from_declared_module(void)
 {
 	log_setup(false);
@@ -323,13 +327,15 @@ static void test_log_from_declared_module(void)
 	/* Setup log backend to validate source_id of the message. */
 	backend1_cb.check_id = true;
 	backend1_cb.exp_id[0] = LOG_CURRENT_MODULE_ID();
+	backend1_cb.exp_id[1] = LOG_CURRENT_MODULE_ID();
 
 	test_func();
+	test_inline_func();
 
 	while (log_process(false)) {
 	}
 
-	zassert_equal(1, backend1_cb.counter,
+	zassert_equal(2, backend1_cb.counter,
 		      "Unexpected amount of messages received by the backend.");
 }
 
